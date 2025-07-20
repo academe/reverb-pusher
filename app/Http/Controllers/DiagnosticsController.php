@@ -9,9 +9,27 @@ use Illuminate\Support\Facades\Log;
 
 class DiagnosticsController extends Controller
 {
+    public function __construct()
+    {
+        // Ensure user is authenticated for all methods
+        $this->middleware('auth');
+    }
+
     public function dashboard()
     {
-        $apps = ReverbApp::where('is_active', true)->get();
+        // Only show masked app keys for security
+        $apps = ReverbApp::where('is_active', true)
+            ->get()
+            ->map(function ($app) {
+                return [
+                    'id' => $app->id,
+                    'name' => $app->name,
+                    'app_key' => $app->app_key,
+                    'app_key_masked' => substr($app->app_key, 0, 8) . '...' . substr($app->app_key, -4),
+                    'is_active' => $app->is_active,
+                ];
+            });
+            
         $totalApps = ReverbApp::count();
         $activeApps = ReverbApp::where('is_active', true)->count();
         
@@ -31,7 +49,8 @@ class DiagnosticsController extends Controller
             'app_found' => true,
             'app_active' => $app->is_active,
             'app_name' => $app->name,
-            'websocket_url' => "wss://{$request->getHost()}/app/{$appKey}",
+            'app_key_masked' => substr($app->app_key, 0, 8) . '...' . substr($app->app_key, -4),
+            'websocket_url' => "wss://{$request->getHost()}/app/[app-key]", // Don't expose real key
             'tests' => []
         ];
 
@@ -45,7 +64,7 @@ class DiagnosticsController extends Controller
         } catch (\Exception $e) {
             $results['tests']['http_health'] = [
                 'status' => 'fail',
-                'error' => $e->getMessage()
+                'error' => 'Connection failed'
             ];
         }
 
@@ -76,7 +95,7 @@ class DiagnosticsController extends Controller
         } catch (\Exception $e) {
             $results['tests']['websocket_handshake'] = [
                 'status' => 'fail',
-                'error' => $e->getMessage()
+                'error' => 'Test failed'
             ];
         }
 
@@ -96,11 +115,12 @@ class DiagnosticsController extends Controller
         }
 
         try {
-            // Log the broadcast attempt
+            // Log the broadcast attempt (with masked key)
             Log::info('Diagnostics: Sending test broadcast', [
-                'app_id' => $app->app_id,
+                'app_name' => $app->name,
+                'app_key_masked' => substr($app->app_key, 0, 8) . '...',
                 'channel' => $channel,
-                'message' => $message
+                'user' => auth()->user()->email,
             ]);
 
             // Send test broadcast
@@ -123,14 +143,15 @@ class DiagnosticsController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Diagnostics: Broadcast failed', [
-                'app_id' => $app->app_id,
-                'error' => $e->getMessage()
+                'app_name' => $app->name,
+                'error' => $e->getMessage(),
+                'user' => auth()->user()->email,
             ]);
 
             return response()->json([
                 'status' => 'error',
                 'message' => 'Broadcast failed',
-                'error' => $e->getMessage()
+                'error' => 'Internal error occurred'
             ], 500);
         }
     }
@@ -139,14 +160,15 @@ class DiagnosticsController extends Controller
     {
         // Check if Reverb process is running
         $reverbRunning = false;
-        $processInfo = null;
+        $processInfo = 'Status check available';
 
         try {
             $output = shell_exec('supervisorctl status reverb-server 2>&1');
             $reverbRunning = strpos($output, 'RUNNING') !== false;
-            $processInfo = trim($output);
+            // Don't expose detailed process info for security
+            $processInfo = $reverbRunning ? 'Process running normally' : 'Process not running';
         } catch (\Exception $e) {
-            $processInfo = 'Could not check process status: ' . $e->getMessage();
+            $processInfo = 'Could not check process status';
         }
 
         return response()->json([

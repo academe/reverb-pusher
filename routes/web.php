@@ -19,8 +19,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Diagnostics routes
-Route::prefix('diagnostics')->group(function () {
+// Diagnostics routes - PROTECTED
+Route::prefix('diagnostics')->middleware(['auth'])->group(function () {
     Route::get('/', [DiagnosticsController::class, 'dashboard'])->name('diagnostics.dashboard');
     Route::post('/test-connection', [DiagnosticsController::class, 'testConnection']);
     Route::post('/send-test-broadcast', [DiagnosticsController::class, 'sendTestBroadcast']);
