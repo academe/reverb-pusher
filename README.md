@@ -193,3 +193,7 @@ location /app {
     proxy_send_timeout 86400;
 }
 ```
+
+## Create a user
+
+    php artisan make:filament-user
