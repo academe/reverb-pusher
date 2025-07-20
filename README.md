@@ -111,19 +111,85 @@ window.Echo = new Echo({
 */
 ```
 
-# Laravel Reverb Standalone Server - Deployment Guide
+## Running the Websockets Server
 
-## Prerequisites
-- Laravel Forge server with PHP 8.3+
-- MySQL database
-- Domain: `pusher.yourdomain.com`
+    php artisan reverb:start --host=0.0.0.0 --port=8080
 
-## Step 1: Create New Laravel 11 Project
+## Endpoints
 
-```bash
-# On your local machine
-composer create-project laravel/laravel reverb-server
-cd reverb-server
+### Admin Panel Access
 
-# Install Filament and Reverb
-composer require filament/filament laravel/reverb
+URL: https://pusher.yourdomain.com/admin
+Port: 443 (HTTPS)
+Served by: Laravel app with Filament
+
+### WebSocket Connections
+
+URL: wss://pusher.yourdomain.com/app/your-app-key
+Port: 443 (WSS - WebSocket Secure)
+Served by: Nginx proxy → Reverb server (internal port 8080)
+
+### API Endpoints (if needed)
+
+URL: https://pusher.yourdomain.com/broadcasting/auth
+Port: 443 (HTTPS)
+Served by: Laravel app (for private channel authentication)
+
+### Internal Architecture
+
+```
+Internet (Port 443) 
+    ↓
+Nginx (Port 80/443)
+    ├── /admin → Laravel App (Filament admin)
+    ├── /app → Reverb Server (Port 8080)
+    └── /broadcasting → Laravel App (auth endpoints)
+```
+
+All Pusher-compatible WebSocket servers (including Soketi, Laravel Reverb, and the official Pusher service) use this URL structure:
+
+    wss://your-domain.com/app/{app_key}
+
+### Laravel Broadcasting Addition
+
+Authentication endpoint: https://domain.com/broadcasting/auth
+Purpose: Authenticate private/presence channels from client-side
+
+When Laravel Uses /broadcasting/auth:
+
+For Private Channels:
+
+```javascript
+// Client tries to subscribe to private channel
+Echo.private('orders.1').listen('OrderShipped', (e) => {
+    console.log(e.order);
+});
+```
+
+What happens:
+
+1. Client connects to WebSocket: wss://pusher.yourdomain.com/app/your-key
+2. Client requests private channel: private-orders.
+3. Laravel client automatically calls: POST /broadcasting/auth
+4. Your Laravel app validates the user can access that channel
+5. Returns signed authentication token
+6. Client subscribes with the token
+
+## nginx minimal change needed
+
+```
+# Add this BEFORE the existing location / block
+location /app {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_cache_bypass $http_upgrade;
+    proxy_read_timeout 86400;
+    proxy_send_timeout 86400;
+}
+```

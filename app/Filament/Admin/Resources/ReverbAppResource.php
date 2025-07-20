@@ -48,22 +48,33 @@ class ReverbAppResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('app_id')
                             ->label('App ID')
+                            ->helperText('Private internal identifier')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
                             
                         Forms\Components\TextInput::make('app_key')
                             ->label('App Key')
+                            ->helperText('Public key for client-side use')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
                             
                         Forms\Components\TextInput::make('app_secret')
                             ->label('App Secret')
+                            ->helperText('Secret key for server-side use')
                             ->required()
                             ->maxLength(255)
                             ->password()
-                            ->revealable(),
+                            ->revealable()
+                            ->suffixAction(
+                                Forms\Components\Actions\Action::make('generateSecret')
+                                    ->icon('heroicon-m-arrow-path')
+                                    ->tooltip('Generate New Secret')
+                                    ->action(function (Forms\Set $set) {
+                                        $set('app_secret', (string) Str::uuid());
+                                    })
+                            ),
                     ])
                     ->columns(1),
 
