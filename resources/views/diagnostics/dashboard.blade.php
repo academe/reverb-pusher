@@ -61,7 +61,7 @@
                         <select x-model="selectedApp" class="border rounded px-3 py-2">
                             <option value="">Select an app to test</option>
                             @foreach($apps as $app)
-                                <option value="{{ $app->app_key }}">{{ $app->name }} ({{ $app->app_key }})</option>
+                                <option value="{{ $app['app_key'] }}">{{ $app['name'] }} ({{ $app['app_key'] }})</option>
                             @endforeach
                         </select>
                         <button @click="testConnection()" :disabled="!selectedApp" 
@@ -108,7 +108,7 @@
                         <select x-model="selectedApp" class="border rounded px-3 py-2">
                             <option value="">Select an app</option>
                             @foreach($apps as $app)
-                                <option value="{{ $app->app_key }}">{{ $app->name }}</option>
+                                <option value="{{ $app['app_key'] }}">{{ $app['name'] }}</option>
                             @endforeach
                         </select>
                         <input x-model="channel" placeholder="Channel name (e.g., test-channel)" 
