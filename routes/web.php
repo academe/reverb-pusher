@@ -3,7 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\DiagnosticsController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -17,14 +16,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-// Diagnostics routes - PROTECTED
-Route::prefix('diagnostics')->middleware(['auth'])->group(function () {
-    Route::get('/', [DiagnosticsController::class, 'dashboard'])->name('diagnostics.dashboard');
-    Route::post('/test-connection', [DiagnosticsController::class, 'testConnection']);
-    Route::post('/send-test-broadcast', [DiagnosticsController::class, 'sendTestBroadcast']);
-    Route::get('/reverb-status', [DiagnosticsController::class, 'reverbStatus']);
 });
 
 Route::get('/health', function () {
