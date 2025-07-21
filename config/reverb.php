@@ -1,14 +1,12 @@
 <?php
-
 // config/reverb.php
-return [
 
+return [
     /*
     |--------------------------------------------------------------------------
     | Default Reverb Server
     |--------------------------------------------------------------------------
     */
-
     'default' => env('REVERB_SERVER', 'reverb'),
 
     /*
@@ -16,9 +14,7 @@ return [
     | Reverb Servers
     |--------------------------------------------------------------------------
     */
-
     'servers' => [
-
         'reverb' => [
             'host' => env('REVERB_HOST', '0.0.0.0'),
             'port' => env('REVERB_PORT', 8080),
@@ -46,36 +42,20 @@ return [
             'pulse_ingest_interval' => env('REVERB_PULSE_INGEST_INTERVAL', 15),
             'telescope_ingest_interval' => env('REVERB_TELESCOPE_INGEST_INTERVAL', 15),
         ],
-
     ],
 
     /*
     |--------------------------------------------------------------------------
     | Reverb Applications
     |--------------------------------------------------------------------------
-    | 
-    | Note: We're using a custom ApplicationProvider instead of the config-based approach
+    |
+    | Apps will be populated dynamically from database via ReverbServiceProvider
     |--------------------------------------------------------------------------
     */
-
     'apps' => [
-        'provider' => 'config', // This gets overridden by our service provider
-        
+        'provider' => 'config',
         'apps' => [
-            [
-                'key' => env('REVERB_APP_KEY'),
-                'secret' => env('REVERB_APP_SECRET'),
-                'app_id' => env('REVERB_APP_ID'),
-                'options' => [
-                    'host' => env('REVERB_HOST'),
-                    'port' => env('REVERB_PORT', 443),
-                    'scheme' => env('REVERB_SCHEME', 'https'),
-                ],
-                'allowed_origins' => ['*'],
-                'ping_interval' => env('REVERB_PING_INTERVAL', 30),
-                'max_message_size' => env('REVERB_MAX_MESSAGE_SIZE', 10000),
-            ],
+            // Will be populated by ReverbServiceProvider from database
         ],
     ],
-
 ];
