@@ -2,6 +2,7 @@
 namespace App\Providers;
 
 use App\Models\ReverbApp;
+use App\Observers\ReverbAppObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Log;
 
@@ -20,6 +21,9 @@ class ReverbServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register the ReverbApp observer
+        ReverbApp::observe(ReverbAppObserver::class);
+        
         // Populate the reverb config with database apps
         $this->app->booted(function () {
             $this->loadAppsFromDatabase();
