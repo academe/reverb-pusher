@@ -31,9 +31,11 @@ class ReverbAppResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn ($state, Forms\Set $set) => 
-                                $set('app_id', 'app-' . Str::slug($state) . '-' . Str::random(4))
-                            ),
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                if (empty($get('app_id'))) {
+                                    $set('app_id', 'app-' . Str::slug($state) . '-' . Str::random(4));
+                                }
+                            }),
                             
                         Forms\Components\Textarea::make('description')
                             ->rows(3),
