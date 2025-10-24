@@ -1,0 +1,18 @@
+task_assignments:
+  - task_group: "Task Group 1: User Model and Database Schema"
+    assigned_subagent: "database-engineer"
+
+  - task_group: "Task Group 2: UserResource and Basic Pages"
+    assigned_subagent: "api-engineer"
+
+  - task_group: "Task Group 3: Email Workflows"
+    assigned_subagent: "api-engineer"
+
+  - task_group: "Task Group 4: Self-Protection and Last User Protection"
+    assigned_subagent: "api-engineer"
+
+  - task_group: "Task Group 5: Remove Breeze Profile Components"
+    assigned_subagent: "api-engineer"
+
+  - task_group: "Task Group 6: Test Coverage Review and Integration Testing"
+    assigned_subagent: "testing-engineer"

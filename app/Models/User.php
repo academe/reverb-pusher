@@ -23,6 +23,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'active',
     ];
 
     /**
@@ -45,11 +46,22 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'active' => 'boolean',
         ];
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true; // Allow all users to access admin panel
+        return $this->active;
+    }
+
+    /**
+     * Check if this is the last active user in the system.
+     *
+     * @return bool
+     */
+    public function isLastActiveUser(): bool
+    {
+        return $this->active && self::where('active', true)->count() === 1;
     }
 }

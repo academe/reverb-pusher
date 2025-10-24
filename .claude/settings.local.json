@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"c:\\Users\\jason\\.config\\herd\\bin\\herd.bat\" php artisan db:show)",
+      "Bash(\"c:\\Users\\jason\\.config\\herd\\bin\\herd.bat\" php artisan db:table users)",
+      "Bash(\"c:\\Users\\jason\\.config\\herd\\bin\\herd.bat\" php artisan db:table reverb_test.users)",
+      "Bash(\"c:\\Users\\jason\\.config\\herd\\bin\\herd.bat\" php artisan db:show --database=reverb_test --json)",
+      "Bash(\"c:\\Users\\jason\\.config\\herd\\bin\\herd.bat\" php artisan test --filter=UserActiveStatusTest)",
+      "Bash(php artisan test --filter=UserResourceTest)",
+      "Bash(/c/Users/jason/.config/herd/bin/php.bat artisan test --filter=UserResourceTest)",
+      "Bash(php artisan test --filter=UserEmailWorkflowTest)",
+      "Bash(\"c:\\Users\\jason\\.config\\herd\\bin\\php.bat\" artisan test --filter=UserEmailWorkflowTest)",
+      "Bash(php artisan test --filter=UserProtectionTest)",
+      "Bash(where php)",
+      "Bash(\"C:\\Users\\jason\\.config\\herd\\bin\\php.bat\" artisan test --filter=UserProtectionTest)",
+      "Bash(test -d \"c:\\Users\\jason\\Herd\\reverb-pusher\\resources\\views\\profile\")",
+      "Bash(test -f \"c:\\Users\\jason\\Herd\\reverb-pusher\\app\\Http\\Controllers\\ProfileController.php\")",
+      "Bash(php artisan test --filter=ProfileConsolidationTest)",
+      "Bash(./vendor/bin/pest --filter=ProfileConsolidationTest)",
+      "Bash(\"C:\\Users\\jason\\.config\\herd\\bin\\php.bat\" artisan test --filter=ProfileConsolidationTest)",
+      "Bash(test -d \"c:\\Users\\jason\\Herd\\reverb-pusher\\agent-os\\specs\\2025-10-20-user-management\\implementation\")",
+      "Bash(php artisan test --filter=UserActiveStatusTest --testdox)",
+      "Bash(php artisan test --filter=UserResourceTest --testdox)",
+      "Bash(php artisan test --filter=UserEmailWorkflowTest --testdox)",
+      "Bash(php artisan test --filter=UserProtectionTest --testdox)",
+      "Bash(php artisan test --filter=ProfileConsolidationTest --testdox)",
+      "Bash(\"C:\\Program Files\\Herd\\resources\\php\\bin\\php.exe\" artisan test --filter=\"User\" --testdox)",
+      "Bash(\"C:\\Users\\jason\\.config\\herd\\bin\\php.bat\" artisan test --filter=\"User\" --testdox)",
+      "Bash(\"C:\\Users\\jason\\.config\\herd\\bin\\php.bat\" artisan test --filter=\"UserActiveStatus|UserResource|UserEmailWorkflow|UserProtection|ProfileConsolidation|UserManagementIntegration\" --testdox)",
+      "Bash(\"C:\\Users\\jason\\.config\\herd\\bin\\php.bat\" artisan test tests/Feature/UserActiveStatusTest.php tests/Feature/UserResourceTest.php tests/Feature/UserEmailWorkflowTest.php tests/Feature/UserProtectionTest.php tests/Feature/ProfileConsolidationTest.php tests/Feature/UserManagementIntegrationTest.php --testdox)",
+      "Bash(php artisan test --filter=User)",
+      "Bash(php.exe artisan test --filter=User)",
+      "Bash(\"C:\\Users\\jason\\.config\\herd-lite\\bin\\php.exe\" artisan test --filter=User)",
+      "Bash(\"C:\\Users\\jason\\.config\\herd\\bin\\php.bat\" artisan test --filter=User)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

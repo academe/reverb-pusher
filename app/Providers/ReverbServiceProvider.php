@@ -22,7 +22,17 @@ class ReverbServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Register the ReverbApp observer
-        ReverbApp::observe(ReverbAppObserver::class);
+        // ReverbApp::observe(ReverbAppObserver::class);
+        // Log::info('ReverbServiceProvider: Observer registered for ReverbApp model');
+
+         // Populate the reverb config with database apps
+        $this->app->booted(function () {
+            // Register the ReverbApp observer AFTER app is booted
+            ReverbApp::observe(ReverbAppObserver::class);
+            Log::info('ReverbServiceProvider: Observer registered for ReverbApp model');
+
+            $this->loadAppsFromDatabase();
+        });
         
         // Populate the reverb config with database apps
         $this->app->booted(function () {

@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\ReverbApp;
 use App\Jobs\RestartReverbServer;
+use Illuminate\Support\Facades\Log;
 
 class ReverbAppObserver
 {
@@ -24,6 +25,7 @@ class ReverbAppObserver
 
     protected function triggerRestart(string $reason): void
     {
+        Log::info("Triggering Reverb server restart: {$reason}");
         RestartReverbServer::dispatch($reason);
     }
 }
