@@ -1,9 +1,32 @@
+# Reverb Pusher
+
+A self-hosted, Pusher-compatible WebSocket server built on Laravel 12 and [Laravel Reverb](https://reverb.laravel.com). Designed for teams and organisations that want full control over their real-time infrastructure without relying on a third-party SaaS. Manage multiple Reverb apps through a Filament admin panel, connect your existing Laravel applications using the standard Pusher protocol, and optionally manage apps programmatically via a REST API.
+
+This project is under active development. Documentation and features will continue to be refined.
+
+## Table of Contents
+
+- [Nginx Configuration](#nginx-configuration)
+- [Supervisor Configuration](#supervisor-configuration)
+- [Client Configuration Example](#client-configuration-example)
+- [Running the WebSocket Server](#running-the-websocket-server)
+- [Endpoints](#endpoints)
+  - [Admin Panel Access](#admin-panel-access)
+  - [WebSocket Connections](#websocket-connections)
+  - [API](#api)
+  - [Broadcasting Auth Endpoint](#broadcasting-auth-endpoint)
+  - [Internal Architecture](#internal-architecture)
+  - [Laravel Broadcasting Addition](#laravel-broadcasting-addition)
+- [Nginx Minimal Change Needed](#nginx-minimal-change-needed)
+- [WebSocket Server Daemon](#websocket-server-daemon)
+- [Create a User](#create-a-user)
+
 ## Nginx Configuration
 
-Add this to your Nginx site configuration in Forge
-This should be added to the server block
+Add this to your Nginx site configuration in Forge.
+This should be added to the server block.
 
-```
+```nginx
 location /app {
     proxy_pass http://127.0.0.1:8080;
     proxy_http_version 1.1;
@@ -14,7 +37,7 @@ location /app {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_cache_bypass $http_upgrade;
-    
+
     # WebSocket specific
     proxy_read_timeout 86400;
     proxy_send_timeout 86400;
@@ -23,7 +46,7 @@ location /app {
 
 Optional: Add a health check endpoint
 
-```
+```nginx
 location /health {
     proxy_pass http://127.0.0.1:8080/health;
     proxy_http_version 1.1;
@@ -34,9 +57,9 @@ location /health {
 }
 ```
 
-## Supevisor Configuration
+## Supervisor Configuration
 
-```
+```ini
 [program:reverb-server]
 process_name=%(program_name)s_%(process_num)02d
 command=php /home/forge/pusher.yourdomain.com/artisan reverb:start --host=0.0.0.0 --port=8080
@@ -51,9 +74,9 @@ stdout_logfile=/home/forge/pusher.yourdomain.com/storage/logs/reverb.log
 stopwaitsecs=3600
 ```
 
-## Client configuration Example
+## Client Configuration Example
 
-```
+```php
 <?php
 
 // For your existing Laravel 9 applications
@@ -75,9 +98,11 @@ stopwaitsecs=3600
         // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
     ],
 ],
+```
 
-// .env configuration for client apps
-/*
+`.env` configuration for client apps:
+
+```env
 BROADCAST_CONNECTION=pusher
 PUSHER_APP_ID=your-app-id-from-admin
 PUSHER_APP_KEY=your-app-key-from-admin
@@ -86,10 +111,11 @@ PUSHER_HOST=pusher.yourdomain.com
 PUSHER_PORT=443
 PUSHER_SCHEME=https
 PUSHER_APP_CLUSTER=
-*/
+```
 
-// JavaScript configuration (for frontend)
-/*
+JavaScript configuration (for frontend):
+
+```javascript
 // resources/js/bootstrap.js
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
@@ -108,37 +134,84 @@ window.Echo = new Echo({
     disableStats: true,
     enabledTransports: ['ws', 'wss'],
 });
-*/
 ```
 
-## Running the Websockets Server
+## Running the WebSocket Server
 
-    php artisan reverb:start --host=0.0.0.0 --port=8080
+```bash
+php artisan reverb:start --host=0.0.0.0 --port=8080
+```
 
 ## Endpoints
 
 ### Admin Panel Access
 
-URL: https://pusher.yourdomain.com/admin
+URL: `https://pusher.yourdomain.com/admin`
 Port: 443 (HTTPS)
 Served by: Laravel app with Filament
 
 ### WebSocket Connections
 
-URL: wss://pusher.yourdomain.com/app/your-app-key
+URL: `wss://pusher.yourdomain.com/app/your-app-key`
 Port: 443 (WSS - WebSocket Secure)
 Served by: Nginx proxy → Reverb server (internal port 8080)
 
-### API Endpoints (if needed)
+### API
 
-URL: https://pusher.yourdomain.com/broadcasting/auth
+The application provides a REST API for programmatic management of Reverb apps. By default, the API is **disabled** — all endpoints return `401 Unauthorized` until a token is configured.
+
+#### Enabling API Access
+
+Set a bearer token in your `.env` file:
+
+```env
+API_TOKEN=your-secret-token-here
+```
+
+This can be any string you choose. For production, generate a strong random token:
+
+```bash
+php artisan tinker --execute="echo Str::random(64);"
+```
+
+#### Authentication
+
+All API requests must include the token as a Bearer token in the `Authorization` header:
+
+```bash
+curl -H "Authorization: Bearer your-secret-token-here" \
+     https://pusher.yourdomain.com/api/reverb-apps
+```
+
+| Scenario                               | Response                                  |
+| -------------------------------------- | ----------------------------------------- |
+| No `API_TOKEN` set in `.env`           | `401` — "API access is not configured."   |
+| Missing or incorrect token in request  | `401` — "Invalid API token."              |
+| Correct token                          | Request proceeds                          |
+
+#### Available Endpoints
+
+| Method | Endpoint                  | Description                                       |
+| ------ | ------------------------- | ------------------------------------------------- |
+| `GET`  | `/api/reverb-apps`        | List all apps (optionally filter by `?active=1`)  |
+| `POST` | `/api/reverb-apps`        | Create a new app                                  |
+| `GET`  | `/api/reverb-apps/{id}`   | Show a specific app                               |
+| `POST` | `/api/reverb-apps/restart`| Queue a Reverb server restart                     |
+
+#### Alternative Authentication
+
+The built-in token authentication is intentionally simple — a single shared secret suitable for server-to-server communication. If you need more advanced authentication (per-user tokens, scoped permissions, token revocation), you can replace the `AuthenticateApiToken` middleware with [Laravel Sanctum](https://laravel.com/docs/sanctum) or any other authentication guard. The API routes are defined in `routes/api.php`.
+
+### Broadcasting Auth Endpoint
+
+URL: `https://pusher.yourdomain.com/broadcasting/auth`
 Port: 443 (HTTPS)
 Served by: Laravel app (for private channel authentication)
 
 ### Internal Architecture
 
-```
-Internet (Port 443) 
+```text
+Internet (Port 443)
     ↓
 Nginx (Port 80/443)
     ├── /admin → Laravel App (Filament admin)
@@ -148,11 +221,13 @@ Nginx (Port 80/443)
 
 All Pusher-compatible WebSocket servers (including Soketi, Laravel Reverb, and the official Pusher service) use this URL structure:
 
-    wss://your-domain.com/app/{app_key}
+```text
+wss://your-domain.com/app/{app_key}
+```
 
 ### Laravel Broadcasting Addition
 
-Authentication endpoint: https://domain.com/broadcasting/auth
+Authentication endpoint: `https://domain.com/broadcasting/auth`
 Purpose: Authenticate private/presence channels from client-side
 
 When Laravel Uses /broadcasting/auth:
@@ -168,16 +243,16 @@ Echo.private('orders.1').listen('OrderShipped', (e) => {
 
 What happens:
 
-1. Client connects to WebSocket: wss://pusher.yourdomain.com/app/your-key
-2. Client requests private channel: private-orders.
-3. Laravel client automatically calls: POST /broadcasting/auth
+1. Client connects to WebSocket: `wss://pusher.yourdomain.com/app/your-key`
+2. Client requests private channel: `private-orders.1`
+3. Laravel client automatically calls: `POST /broadcasting/auth`
 4. Your Laravel app validates the user can access that channel
 5. Returns signed authentication token
 6. Client subscribes with the token
 
-## nginx minimal change needed
+## Nginx Minimal Change Needed
 
-```
+```nginx
 # Add this BEFORE the existing location / block
 
     location /app {
@@ -195,16 +270,20 @@ What happens:
     }
 ```
 
-## Websockets Server Daemon
+## WebSocket Server Daemon
 
-Directory:
-/home/forge/your.websockets.server.domain/
+Directory: `/home/forge/your.websockets.server.domain/`
 
 Command:
+
+```bash
 php8.4 artisan reverb:start --host=0.0.0.0 --port=8080
+```
 
-## Create a user
+## Create a User
 
-    php artisan make:filament-user
+```bash
+php artisan make:filament-user
 
-    php8.4 artisan make:filament-user
+php8.4 artisan make:filament-user
+```
