@@ -16,9 +16,9 @@ class ReverbAppResource extends Resource
     protected static ?string $model = ReverbApp::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-signal';
-    
+
     protected static ?string $navigationLabel = 'WebSocket Apps';
-    
+
     protected static ?string $modelLabel = 'WebSocket App';
 
     public static function form(Form $form): Form
@@ -33,13 +33,13 @@ class ReverbAppResource extends Resource
                             ->live(onBlur: true)
                             ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                                 if (empty($get('app_id'))) {
-                                    $set('app_id', 'app-' . Str::slug($state) . '-' . Str::random(4));
+                                    $set('app_id', 'app-'.Str::slug($state).'-'.Str::random(4));
                                 }
                             }),
-                            
+
                         Forms\Components\Textarea::make('description')
                             ->rows(3),
-                            
+
                         Forms\Components\Toggle::make('is_active')
                             ->label('Active')
                             ->default(true),
@@ -54,14 +54,14 @@ class ReverbAppResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
-                            
+
                         Forms\Components\TextInput::make('app_key')
                             ->label('App Key')
                             ->helperText('Public key for client-side use')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
-                            
+
                         Forms\Components\TextInput::make('app_secret')
                             ->label('App Secret')
                             ->helperText('Secret key for server-side use')
@@ -87,7 +87,7 @@ class ReverbAppResource extends Resource
                             ->numeric()
                             ->default(1000)
                             ->minValue(1),
-                            
+
                         Forms\Components\TagsInput::make('allowed_origins')
                             ->label('Allowed Origins')
                             ->placeholder('https://yourdomain.com')
@@ -104,26 +104,26 @@ class ReverbAppResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                    
+
                 Tables\Columns\TextColumn::make('app_id')
                     ->label('App ID')
                     ->searchable()
                     ->copyable()
                     ->copyMessage('App ID copied to clipboard'),
-                    
+
                 Tables\Columns\TextColumn::make('app_key')
                     ->label('App Key')
                     ->copyable()
                     ->copyMessage('App Key copied to clipboard'),
-                    
+
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean(),
-                    
+
                 Tables\Columns\TextColumn::make('max_connections')
                     ->label('Max Connections')
                     ->numeric(),
-                    
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -26,12 +26,12 @@ Route::get('/health', function () {
                 'database' => 'ok',
                 'reverb' => 'running',
                 'active_apps' => $activeApps,
-            ]
+            ],
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'unhealthy',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 500);
     }
 });

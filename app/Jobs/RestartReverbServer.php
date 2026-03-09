@@ -22,17 +22,17 @@ class RestartReverbServer implements ShouldQueue
     {
         try {
             Log::info("Reverb: {$this->reason}, triggering restart");
-            
+
             Artisan::call('reverb:restart');
-            
+
             Log::info('Reverb: Successfully triggered restart via artisan');
-            
+
         } catch (\Exception $e) {
             Log::error('Reverb: Failed to restart server', [
                 'reason' => $this->reason,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             throw $e;
         }
     }

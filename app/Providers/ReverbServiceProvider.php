@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Providers;
 
 use App\Models\ReverbApp;
 use App\Observers\ReverbAppObserver;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\ServiceProvider;
 
 class ReverbServiceProvider extends ServiceProvider
 {
@@ -25,7 +26,7 @@ class ReverbServiceProvider extends ServiceProvider
         // ReverbApp::observe(ReverbAppObserver::class);
         // Log::info('ReverbServiceProvider: Observer registered for ReverbApp model');
 
-         // Populate the reverb config with database apps
+        // Populate the reverb config with database apps
         $this->app->booted(function () {
             // Register the ReverbApp observer AFTER app is booted
             ReverbApp::observe(ReverbAppObserver::class);
@@ -33,7 +34,7 @@ class ReverbServiceProvider extends ServiceProvider
 
             $this->loadAppsFromDatabase();
         });
-        
+
         // Populate the reverb config with database apps
         $this->app->booted(function () {
             $this->loadAppsFromDatabase();
@@ -47,9 +48,9 @@ class ReverbServiceProvider extends ServiceProvider
     {
         try {
             Log::info('Reverb: Loading apps from database');
-            
+
             $apps = ReverbApp::where('is_active', true)->get();
-            
+
             $reverbApps = $apps->map(function ($app) {
                 return [
                     'key' => $app->app_key,
@@ -69,9 +70,9 @@ class ReverbServiceProvider extends ServiceProvider
 
             // Update the config at runtime
             config(['reverb.apps.apps' => $reverbApps]);
-            
-            Log::info('Reverb: Loaded ' . count($reverbApps) . ' apps from database');
-            
+
+            Log::info('Reverb: Loaded '.count($reverbApps).' apps from database');
+
         } catch (\Exception $e) {
             Log::warning('Reverb: Could not load apps from database', ['error' => $e->getMessage()]);
             // Keep empty array as fallback

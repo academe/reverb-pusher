@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('max_connections')->default(1000);
             $table->json('allowed_origins')->nullable();
             $table->timestamps();
-            
+
             $table->index(['app_id', 'is_active']);
         });
     }

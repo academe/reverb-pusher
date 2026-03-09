@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\ReverbApp;
 use App\Jobs\RestartReverbServer;
+use App\Models\ReverbApp;
 use Illuminate\Support\Facades\Log;
 
 class ReverbAppObserver
