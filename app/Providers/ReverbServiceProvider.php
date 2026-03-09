@@ -22,21 +22,8 @@ class ReverbServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Register the ReverbApp observer
-        // ReverbApp::observe(ReverbAppObserver::class);
-        // Log::info('ReverbServiceProvider: Observer registered for ReverbApp model');
-
-        // Populate the reverb config with database apps
         $this->app->booted(function () {
-            // Register the ReverbApp observer AFTER app is booted
             ReverbApp::observe(ReverbAppObserver::class);
-            Log::info('ReverbServiceProvider: Observer registered for ReverbApp model');
-
-            $this->loadAppsFromDatabase();
-        });
-
-        // Populate the reverb config with database apps
-        $this->app->booted(function () {
             $this->loadAppsFromDatabase();
         });
     }
@@ -47,7 +34,7 @@ class ReverbServiceProvider extends ServiceProvider
     private function loadAppsFromDatabase(): void
     {
         try {
-            Log::info('Reverb: Loading apps from database');
+            Log::debug('Reverb: Loading apps from database');
 
             $apps = ReverbApp::where('is_active', true)->get();
 
@@ -59,9 +46,9 @@ class ReverbServiceProvider extends ServiceProvider
                     'options' => [
                         'host' => config('reverb.servers.reverb.hostname'),
                         'port' => config('reverb.servers.reverb.port', 443),
-                        'scheme' => env('REVERB_SCHEME', 'https'),
+                        'scheme' => config('reverb.servers.reverb.scheme', 'https'),
                     ],
-                    'allowed_origins' => $app->allowed_origins ?? ['*'],
+                    'allowed_origins' => $app->allowed_origins ?? [],
                     'ping_interval' => 30,
                     'activity_timeout' => 30,
                     'max_message_size' => 10000,
@@ -71,7 +58,7 @@ class ReverbServiceProvider extends ServiceProvider
             // Update the config at runtime
             config(['reverb.apps.apps' => $reverbApps]);
 
-            Log::info('Reverb: Loaded '.count($reverbApps).' apps from database');
+            Log::debug('Reverb: Loaded '.count($reverbApps).' apps from database');
 
         } catch (\Exception $e) {
             Log::warning('Reverb: Could not load apps from database', ['error' => $e->getMessage()]);

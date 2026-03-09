@@ -20,7 +20,7 @@ class CreateUser extends CreateRecord
         // If no password provided, generate a temporary random one
         // The user will receive an invitation email to set their own password
         if (empty($data['password'])) {
-            $data['password'] = bcrypt(Str::random(32));
+            $data['password'] = Str::random(32);
         }
 
         return $data;

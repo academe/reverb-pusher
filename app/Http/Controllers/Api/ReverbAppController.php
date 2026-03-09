@@ -18,7 +18,7 @@ class ReverbAppController extends Controller
             $query->where('is_active', (bool) $request->input('active'));
         }
 
-        return response()->json(['data' => $query->get()]);
+        return response()->json(['data' => $query->get()->makeHidden('app_secret')]);
     }
 
     public function store(Request $request): JsonResponse
@@ -42,7 +42,7 @@ class ReverbAppController extends Controller
 
     public function show(ReverbApp $reverbApp): JsonResponse
     {
-        return response()->json(['data' => $reverbApp]);
+        return response()->json(['data' => $reverbApp->makeHidden('app_secret')]);
     }
 
     public function restart(): JsonResponse

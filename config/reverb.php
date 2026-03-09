@@ -20,6 +20,7 @@ return [
             'host' => env('REVERB_HOST', '0.0.0.0'),
             'port' => env('REVERB_PORT', 8080),
             'hostname' => env('REVERB_HOSTNAME'),
+            'scheme' => env('REVERB_SCHEME', 'https'),
             'options' => [
                 'tls' => [],
             ],

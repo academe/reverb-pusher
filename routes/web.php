@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -29,9 +30,10 @@ Route::get('/health', function () {
             ],
         ]);
     } catch (\Exception $e) {
+        Log::error('Health check failed', ['error' => $e->getMessage()]);
+
         return response()->json([
             'status' => 'unhealthy',
-            'error' => $e->getMessage(),
         ], 500);
     }
 });

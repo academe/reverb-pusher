@@ -21,10 +21,14 @@ class ReverbApp extends Model
         'allowed_origins',
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-        'allowed_origins' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'allowed_origins' => 'array',
+            'app_secret' => 'encrypted',
+        ];
+    }
 
     protected static function boot()
     {
@@ -38,7 +42,7 @@ class ReverbApp extends Model
                 $app->app_key = 'key-'.Str::random(16);
             }
             if (empty($app->app_secret)) {
-                $app->app_secret = 'secret-'.Str::random(32);
+                $app->app_secret = Str::random(64);
             }
         });
     }
