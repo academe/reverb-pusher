@@ -76,8 +76,7 @@ class UserResource extends Resource
                             ->reactive(),
 
                         Forms\Components\Hidden::make('email_verified_at')
-                            ->dehydrateStateUsing(fn ($state, Forms\Get $get) =>
-                                $get('email_verified') ? now() : null
+                            ->dehydrateStateUsing(fn ($state, Forms\Get $get) => $get('email_verified') ? now() : null
                             ),
                     ])
                     ->columns(1),
@@ -126,6 +125,7 @@ class UserResource extends Resource
                                 ->title('Cannot delete your own account')
                                 ->send();
                             $action->cancel();
+
                             return;
                         }
 
@@ -149,12 +149,14 @@ class UserResource extends Resource
                             foreach ($records as $record) {
                                 // Check if record is protected
                                 if ($record->id === auth()->id()) {
-                                    $protected[] = $record->name . ' (yourself)';
+                                    $protected[] = $record->name.' (yourself)';
+
                                     continue;
                                 }
 
                                 if ($record->isLastActiveUser()) {
-                                    $protected[] = $record->name . ' (last active user)';
+                                    $protected[] = $record->name.' (last active user)';
+
                                     continue;
                                 }
 
@@ -168,7 +170,7 @@ class UserResource extends Resource
                                 Notification::make()
                                     ->success()
                                     ->title('Users deleted')
-                                    ->body(count($deleted) . ' user(s) deleted successfully')
+                                    ->body(count($deleted).' user(s) deleted successfully')
                                     ->send();
                             }
 
@@ -176,7 +178,7 @@ class UserResource extends Resource
                                 Notification::make()
                                     ->warning()
                                     ->title('Some users were skipped')
-                                    ->body('Protected users: ' . implode(', ', $protected))
+                                    ->body('Protected users: '.implode(', ', $protected))
                                     ->send();
                             }
                         }),

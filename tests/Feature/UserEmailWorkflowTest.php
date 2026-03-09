@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Admin\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Auth\Notifications\ResetPassword;
-use Tests\TestCase;
 use Livewire\Livewire;
-use App\Filament\Admin\Resources\UserResource;
+use Tests\TestCase;
 
 class UserEmailWorkflowTest extends TestCase
 {

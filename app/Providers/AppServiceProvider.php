@@ -2,15 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\ReverbApp;
 use App\Models\User;
+use App\Observers\ReverbAppObserver;
 use App\Policies\UserPolicy;
-use App\Providers\DatabaseApplicationProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Reverb\Contracts\ApplicationProvider;
-use App\Models\ReverbApp;
-use App\Observers\ReverbAppObserver;
-use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
 {

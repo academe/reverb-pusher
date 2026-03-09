@@ -18,7 +18,7 @@ class ReverbApp extends Model
         'description',
         'is_active',
         'max_connections',
-        'allowed_origins'
+        'allowed_origins',
     ];
 
     protected $casts = [
@@ -29,16 +29,16 @@ class ReverbApp extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($app) {
             if (empty($app->app_id)) {
-                $app->app_id = 'app-' . Str::random(8);
+                $app->app_id = 'app-'.Str::random(8);
             }
             if (empty($app->app_key)) {
-                $app->app_key = 'key-' . Str::random(16);
+                $app->app_key = 'key-'.Str::random(16);
             }
             if (empty($app->app_secret)) {
-                $app->app_secret = 'secret-' . Str::random(32);
+                $app->app_secret = 'secret-'.Str::random(32);
             }
         });
     }

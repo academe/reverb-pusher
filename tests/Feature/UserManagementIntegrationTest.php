@@ -154,13 +154,15 @@ class UserManagementIntegrationTest extends TestCase
         foreach ($recordsToDelete as $record) {
             // Check if record is protected (self)
             if ($record->id === $admin->id) {
-                $protected[] = $record->name . ' (yourself)';
+                $protected[] = $record->name.' (yourself)';
+
                 continue;
             }
 
             // Check if record is last active user
             if ($record->isLastActiveUser()) {
-                $protected[] = $record->name . ' (last active user)';
+                $protected[] = $record->name.' (last active user)';
+
                 continue;
             }
 
