@@ -45,7 +45,7 @@ class UserResource extends Resource
                             ->password()
                             ->revealable()
                             ->minLength(8)
-                            ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
+                            ->dehydrateStateUsing(fn ($state) => filled($state) ? $state : null)
                             ->dehydrated(fn ($state) => filled($state))
                             ->confirmed()
                             ->requiredWith('password_confirmation'),

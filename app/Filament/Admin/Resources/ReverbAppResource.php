@@ -74,7 +74,7 @@ class ReverbAppResource extends Resource
                                     ->icon('heroicon-m-arrow-path')
                                     ->tooltip('Generate New Secret')
                                     ->action(function (Forms\Set $set) {
-                                        $set('app_secret', (string) Str::uuid());
+                                        $set('app_secret', Str::random(64));
                                     })
                             ),
                     ])
@@ -91,7 +91,7 @@ class ReverbAppResource extends Resource
                         Forms\Components\TagsInput::make('allowed_origins')
                             ->label('Allowed Origins')
                             ->placeholder('https://yourdomain.com')
-                            ->helperText('Leave empty to allow all origins'),
+                            ->helperText('Use * to allow all origins, or specify allowed origins (e.g. https://yourdomain.com)'),
                     ])
                     ->columns(1),
             ]);
