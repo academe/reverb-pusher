@@ -107,6 +107,38 @@ describe('POST /api/reverb-apps', function () {
         'gibberish' => [['not a domain!!']],
     ]);
 
+    it('rejects credential fields with disallowed characters', function (string $field, string $value) {
+        $this->withHeader('Authorization', 'Bearer test-api-token')
+            ->postJson('/api/reverb-apps', [
+                'name' => 'Bad Creds',
+                $field => $value,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([$field]);
+    })->with([
+        'app_id with space' => ['app_id', 'my app id'],
+        'app_id with colon' => ['app_id', 'app:1'],
+        'app_id with slash' => ['app_id', 'app/path'],
+        'app_key with space' => ['app_key', 'my key value'],
+        'app_key with colon' => ['app_key', 'key:1234'],
+        'app_secret with space' => ['app_secret', 'a secret with spaces'],
+        'app_secret with colon' => ['app_secret', 'secret:abcdefghij'],
+    ]);
+
+    it('rejects credential fields shorter than the minimum', function (string $field, string $value) {
+        $this->withHeader('Authorization', 'Bearer test-api-token')
+            ->postJson('/api/reverb-apps', [
+                'name' => 'Short Creds',
+                $field => $value,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([$field]);
+    })->with([
+        'app_id too short' => ['app_id', 'short'],
+        'app_key too short' => ['app_key', 'short'],
+        'app_secret too short' => ['app_secret', 'less-than-16'],
+    ]);
+
     it('validates name is required', function () {
         $this->withHeader('Authorization', 'Bearer test-api-token')
             ->postJson('/api/reverb-apps', [])

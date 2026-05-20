@@ -25,9 +25,9 @@ class ReverbAppController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'app_id' => ['sometimes', 'string', 'max:255', 'unique:reverb_apps,app_id'],
-            'app_key' => ['sometimes', 'string', 'max:255', 'unique:reverb_apps,app_key'],
-            'app_secret' => ['sometimes', 'string', 'max:255'],
+            'app_id' => ['sometimes', 'string', 'min:8', 'max:255', 'regex:/^[A-Za-z0-9_\-]+$/', 'unique:reverb_apps,app_id'],
+            'app_key' => ['sometimes', 'string', 'min:8', 'max:255', 'regex:/^[A-Za-z0-9_\-]+$/', 'unique:reverb_apps,app_key'],
+            'app_secret' => ['sometimes', 'string', 'min:16', 'max:255', 'regex:/^[A-Za-z0-9_\-]+$/'],
             'description' => ['sometimes', 'nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
             'max_connections' => ['sometimes', 'integer', 'min:1'],

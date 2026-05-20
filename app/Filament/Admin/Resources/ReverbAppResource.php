@@ -52,21 +52,46 @@ class ReverbAppResource extends Resource
                             ->label('App ID')
                             ->helperText('Private internal identifier')
                             ->required()
+                            ->minLength(8)
                             ->maxLength(255)
+                            ->regex('/^[A-Za-z0-9_\-]+$/')
+                            ->validationMessages([
+                                'regex' => 'Only letters, digits, hyphens and underscores are allowed.',
+                            ])
                             ->unique(ignoreRecord: true),
 
                         Forms\Components\TextInput::make('app_key')
                             ->label('App Key')
                             ->helperText('Public key for client-side use')
                             ->required()
+                            ->minLength(8)
                             ->maxLength(255)
-                            ->unique(ignoreRecord: true),
+                            ->regex('/^[A-Za-z0-9_\-]+$/')
+                            ->validationMessages([
+                                'regex' => 'Only letters, digits, hyphens and underscores are allowed.',
+                            ])
+                            ->default(fn () => 'key-'.Str::random(16))
+                            ->unique(ignoreRecord: true)
+                            ->suffixAction(
+                                Forms\Components\Actions\Action::make('generateKey')
+                                    ->icon('heroicon-m-arrow-path')
+                                    ->tooltip('Generate New Key')
+                                    ->action(function (Forms\Set $set) {
+                                        $set('app_key', 'key-'.Str::random(16));
+                                    })
+                            ),
 
                         Forms\Components\TextInput::make('app_secret')
                             ->label('App Secret')
                             ->helperText('Secret key for server-side use')
                             ->required()
+                            ->minLength(16)
                             ->maxLength(255)
+                            ->regex('/^[A-Za-z0-9_\-]+$/')
+                            ->validationMessages([
+                                'regex' => 'Only letters, digits, hyphens and underscores are allowed.',
+                            ])
+                            ->default(fn () => Str::random(64))
                             ->password()
                             ->revealable()
                             ->suffixAction(
