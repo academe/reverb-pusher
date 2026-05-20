@@ -138,9 +138,21 @@ window.Echo = new Echo({
 
 ## Running the WebSocket Server
 
+For development this is the easiest to run:
+
 ```bash
 php artisan reverb:start --host=0.0.0.0 --port=8080
 ```
+
+On production you may want to bind to localhost or a private NIC only:
+
+```bash
+php artisan reverb:start --host=127.0.0.1 --port=8080
+php artisan reverb:start --host=10.0.0.5 --port=8080
+```
+
+By binding to 0.0.0.0 there is a risk that port 8080 will be exposed to the Internet if not blocked by firewall.
+However, if your nginx server is not local, then you may have to use 0.0.0.0 and be very careful with firewall settings.
 
 ## Endpoints
 

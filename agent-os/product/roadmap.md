@@ -18,7 +18,7 @@
 
 9. [ ] **Channel Presence Tracking** — Enhanced presence channel support with member tracking, typing indicators, and online/offline status management, providing building blocks for collaborative features like live cursors and user lists. `L`
 
-10. [ ] **API Access** — RESTful API for programmatic management of WebSocket applications, allowing automated provisioning, credential rotation, and configuration updates from CI/CD pipelines or infrastructure-as-code tools. `M`
+10. [x] **API Access** — RESTful API for programmatic management of WebSocket applications, allowing automated provisioning, credential rotation, and configuration updates from CI/CD pipelines or infrastructure-as-code tools. `M`
 
 11. [ ] **Health Check Endpoints** — Dedicated health check and readiness endpoints for load balancers and monitoring systems, with detailed status information about server capacity, database connectivity, and queue worker health. `S`
 

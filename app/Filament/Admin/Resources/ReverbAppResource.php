@@ -90,8 +90,26 @@ class ReverbAppResource extends Resource
 
                         Forms\Components\TagsInput::make('allowed_origins')
                             ->label('Allowed Origins')
-                            ->placeholder('https://yourdomain.com')
-                            ->helperText('Use * to allow all origins, or specify allowed origins (e.g. https://yourdomain.com)'),
+                            ->placeholder('yourdomain.com')
+                            ->helperText('A list of domains. Use * to allow all domains.')
+                            ->splitKeys(['Enter', 'Tab', ' '])
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                if (! is_array($state)) {
+                                    return;
+                                }
+
+                                $normalized = collect($state)
+                                    ->map(fn ($value) => ReverbApp::normalizeOrigin($value))
+                                    ->filter()
+                                    ->unique()
+                                    ->values()
+                                    ->all();
+
+                                if ($normalized !== $state) {
+                                    $set('allowed_origins', $normalized);
+                                }
+                            }),
                     ])
                     ->columns(1),
             ]);

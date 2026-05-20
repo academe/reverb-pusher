@@ -51,4 +51,35 @@ class ReverbApp extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Reduce a pasted origin to a bare domain (or '*').
+     *
+     * Reverb's allowed_origins config expects hostnames, not full URLs.
+     * Pasting "https://example.com/path" returns "example.com".
+     */
+    public static function normalizeOrigin(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        if ($value === '*') {
+            return '*';
+        }
+
+        if (str_contains($value, '://')) {
+            $host = parse_url($value, PHP_URL_HOST);
+
+            if (is_string($host) && $host !== '') {
+                return strtolower($host);
+            }
+        }
+
+        $value = preg_replace('~[/?#].*$~', '', $value);
+
+        return strtolower($value);
+    }
 }

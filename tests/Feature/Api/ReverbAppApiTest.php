@@ -60,7 +60,7 @@ describe('POST /api/reverb-apps', function () {
                 'app_id' => 'my-custom-id',
                 'app_key' => 'my-custom-key',
                 'app_secret' => 'my-custom-secret',
-                'allowed_origins' => ['https://example.com'],
+                'allowed_origins' => ['example.com'],
                 'max_connections' => 500,
             ]);
 
@@ -70,9 +70,42 @@ describe('POST /api/reverb-apps', function () {
         expect($data['app_id'])->toBe('my-custom-id');
         expect($data['app_key'])->toBe('my-custom-key');
         expect($data['app_secret'])->toBe('my-custom-secret');
-        expect($data['allowed_origins'])->toBe(['https://example.com']);
+        expect($data['allowed_origins'])->toBe(['example.com']);
         expect($data['max_connections'])->toBe(500);
     });
+
+    it('accepts bare domains and the wildcard in allowed_origins', function (array $origins) {
+        $this->withHeader('Authorization', 'Bearer test-api-token')
+            ->postJson('/api/reverb-apps', [
+                'name' => 'Origins Test',
+                'allowed_origins' => $origins,
+            ])
+            ->assertCreated();
+    })->with([
+        'wildcard' => [['*']],
+        'bare domain' => [['example.com']],
+        'subdomain' => [['app.example.com']],
+        'localhost' => [['localhost']],
+        'multiple' => [['example.com', 'api.example.com', '*']],
+    ]);
+
+    it('rejects allowed_origins entries that are not domains or *', function (array $origins) {
+        $this->withHeader('Authorization', 'Bearer test-api-token')
+            ->postJson('/api/reverb-apps', [
+                'name' => 'Bad Origins',
+                'allowed_origins' => $origins,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['allowed_origins.0']);
+    })->with([
+        'full URL with scheme' => [['https://example.com']],
+        'URL with path' => [['https://example.com/foo']],
+        'domain with path' => [['example.com/foo']],
+        'domain with port' => [['example.com:8080']],
+        'domain with query' => [['example.com?x=1']],
+        'empty string' => [['']],
+        'gibberish' => [['not a domain!!']],
+    ]);
 
     it('validates name is required', function () {
         $this->withHeader('Authorization', 'Bearer test-api-token')

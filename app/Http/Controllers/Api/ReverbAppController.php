@@ -32,7 +32,19 @@ class ReverbAppController extends Controller
             'is_active' => ['sometimes', 'boolean'],
             'max_connections' => ['sometimes', 'integer', 'min:1'],
             'allowed_origins' => ['sometimes', 'array'],
-            'allowed_origins.*' => ['string'],
+            'allowed_origins.*' => ['string', function (string $attribute, mixed $value, \Closure $fail): void {
+                if ($value === '*') {
+                    return;
+                }
+
+                $isValidDomain = is_string($value)
+                    && $value === trim($value)
+                    && filter_var($value, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME);
+
+                if (! $isValidDomain) {
+                    $fail("The {$attribute} field must be a domain (e.g. example.com) or '*'.");
+                }
+            }],
         ]);
 
         $app = ReverbApp::create($validated);
