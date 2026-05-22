@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\ReverbApp;
 use App\Observers\ReverbAppObserver;
+use App\Support\LoopbackApp;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
@@ -54,6 +55,10 @@ class ReverbServiceProvider extends ServiceProvider
                     'max_message_size' => 10000,
                 ];
             })->toArray();
+
+            // Always append the loopback app — credentials are derived from APP_KEY
+            // and allowed_origins is restricted to the app's own domain.
+            $reverbApps[] = LoopbackApp::reverbConfig();
 
             // Update the config at runtime
             config(['reverb.apps.apps' => $reverbApps]);

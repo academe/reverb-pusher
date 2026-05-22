@@ -17,38 +17,38 @@ This project is under active development. Documentation and features will contin
   - [Broadcasting Auth Endpoint](#broadcasting-auth-endpoint)
   - [Internal Architecture](#internal-architecture)
   - [Laravel Broadcasting Addition](#laravel-broadcasting-addition)
-- [Nginx Minimal Change Needed](#nginx-minimal-change-needed)
 - [WebSocket Server Daemon](#websocket-server-daemon)
 - [Create a User](#create-a-user)
 
 ## Nginx Configuration
 
-Add this to your Nginx site configuration in Forge.
-This should be added to the server block.
+Browsers on an HTTPS page cannot speak plain `ws://`. Nginx (or whichever
+reverse proxy fronts your site) has to terminate TLS and forward the WebSocket
+upgrade through to Reverb on its local port. Substitute `REVERB_PORT` below
+with whatever port `php artisan reverb:start` listens on (default `8080`).
+
+Add the following inside the `server { listen 443 ssl; ... }` block, **before**
+any catch-all `location /`:
 
 ```nginx
-location /app {
-    proxy_pass http://127.0.0.1:8080;
+# Reverb WebSocket — required for any browser client (including the diagnostic page)
+location ^~ /app/ {
+    proxy_pass http://127.0.0.1:REVERB_PORT;
     proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection 'upgrade';
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_cache_bypass $http_upgrade;
-
-    # WebSocket specific
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
     proxy_read_timeout 86400;
     proxy_send_timeout 86400;
 }
-```
 
-Optional: Add a health check endpoint
-
-```nginx
-location /health {
-    proxy_pass http://127.0.0.1:8080/health;
+# Reverb HTTP API — only needed if PHP reaches Reverb via this proxy
+# (skip this block if your PHP broadcaster connects directly to 127.0.0.1:REVERB_PORT)
+location ^~ /apps/ {
+    proxy_pass http://127.0.0.1:REVERB_PORT;
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
@@ -56,6 +56,52 @@ location /health {
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 ```
+
+Notes:
+
+- `^~` makes these prefix matches win over any regex `location` blocks in the
+  same server (Herd's generated config contains `location ~ \.php` and
+  `location ~ /\.ht`, which would otherwise compete).
+- The trailing slash on `/app/` and `/apps/` matches paths *under* those
+  prefixes (e.g. `/app/{appKey}`, `/apps/{appId}/events`) without
+  accidentally matching unrelated routes that just happen to start with
+  `app`.
+- `proxy_read_timeout 86400` is a day — without it nginx kills idle
+  WebSocket connections at 60s.
+
+Optional health-check passthrough:
+
+```nginx
+location = /health {
+    proxy_pass http://127.0.0.1:REVERB_PORT/health;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+### Verifying the proxy
+
+The **Reverb Diagnostics** page in the admin panel includes a server-side
+transport probe that issues an HTTP request with `Upgrade: websocket`
+headers against `/app/{loopbackKey}` and reads only the status line:
+
+| Result | Meaning |
+| --- | --- |
+| `101 Switching Protocols` | Proxy forwards upgrades to Reverb correctly |
+| `404` | Proxy is not forwarding `/app/*` — the snippet above is missing |
+| `5xx` | Proxy is configured but Reverb on the upstream port is not running |
+| Connection refused / timeout | Nothing listening at the host/port the browser would use |
+
+### Herd-specific note
+
+Herd generates its per-site nginx config at
+`~/.config/herd/config/valet/Nginx/{site}.test.conf` and may regenerate that
+file (e.g. when toggling TLS), discarding manual edits. Keep this snippet
+somewhere safe so you can re-paste it after a regeneration. Herd does not
+currently document a per-site custom-config drop-in mechanism.
 
 ## Supervisor Configuration
 
@@ -261,26 +307,6 @@ What happens:
 4. Your Laravel app validates the user can access that channel
 5. Returns signed authentication token
 6. Client subscribes with the token
-
-## Nginx Minimal Change Needed
-
-```nginx
-# Add this BEFORE the existing location / block
-
-    location /app {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 86400;
-        proxy_send_timeout 86400;
-    }
-```
 
 ## WebSocket Server Daemon
 

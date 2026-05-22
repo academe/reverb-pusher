@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\LoopbackApp;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -14,19 +16,13 @@ Route::get('/dashboard', function () {
 
 Route::get('/health', function () {
     try {
-        // Test database connection
         DB::connection()->getPdo();
-
-        // Count active WebSocket apps
-        $activeApps = \App\Models\ReverbApp::where('is_active', true)->count();
 
         return response()->json([
             'status' => 'healthy',
             'timestamp' => now(),
             'services' => [
                 'database' => 'ok',
-                'reverb' => 'running',
-                'active_apps' => $activeApps,
             ],
         ]);
     } catch (\Exception $e) {
@@ -37,5 +33,20 @@ Route::get('/health', function () {
         ], 500);
     }
 });
+
+// Channel auth for the loopback diagnostics app.
+// Must sign with the loopback secret so Reverb can verify using its own app record.
+Route::post('/reverb/loopback-auth', function (Request $request) {
+    $socketId = $request->string('socket_id')->toString();
+    $channelName = $request->string('channel_name')->toString();
+
+    if (! $socketId || ! $channelName) {
+        return response()->json(['error' => 'Missing socket_id or channel_name.'], 400);
+    }
+
+    $signature = hash_hmac('sha256', "{$socketId}:{$channelName}", LoopbackApp::secret());
+
+    return response()->json(['auth' => LoopbackApp::key().':'.$signature]);
+})->middleware(['auth']);
 
 require __DIR__.'/auth.php';

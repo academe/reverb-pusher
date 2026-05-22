@@ -47,7 +47,7 @@ describe('POST /api/reverb-apps', function () {
         expect($data['name'])->toBe('My Publisher');
         expect($data['app_id'])->toStartWith('app-');
         expect($data['app_key'])->toStartWith('key-');
-        expect($data['app_secret'])->toStartWith('secret-');
+        expect($data['app_secret'])->toBeString()->toHaveLength(64);
         expect($data['is_active'])->toBeTrue();
 
         $this->assertDatabaseHas('reverb_apps', ['name' => 'My Publisher']);
@@ -180,7 +180,7 @@ describe('GET /api/reverb-apps/{reverbApp}', function () {
 
         $response->assertOk()
             ->assertJsonPath('data.name', 'Lookup Test')
-            ->assertJsonPath('data.app_secret', $app->app_secret);
+            ->assertJsonMissingPath('data.app_secret');
     });
 
     it('returns 404 for non-existent app', function () {
