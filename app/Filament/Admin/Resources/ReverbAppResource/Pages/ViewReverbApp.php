@@ -43,7 +43,10 @@ class ViewReverbApp extends ViewRecord
                             ->copyable(),
                         Infolists\Components\TextEntry::make('app_secret')
                             ->label('App Secret')
-                            ->copyable(),
+                            ->formatStateUsing(fn (string $state): string => str_repeat('•', max(8, min(strlen($state), 32))))
+                            ->copyable()
+                            ->copyableState(fn (string $state): string => $state)
+                            ->copyMessage('App Secret copied to clipboard'),
                     ])
                     ->columns(1),
 
