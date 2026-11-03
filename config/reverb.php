@@ -60,4 +60,23 @@ return [
             // Will be populated by ReverbServiceProvider from database
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Loading Apps When The Server Starts
+    |--------------------------------------------------------------------------
+    |
+    | When `reverb:start` cannot read any active apps from the database, it
+    | retries for up to `retry_window` seconds, doubling the wait each time
+    | but never waiting longer than `max_retry_delay` seconds at once. It then
+    | exits with an error so the process manager can start it again. Keep the
+    | window well above the process manager's minimum run time (supervisor's
+    | `startsecs`), or an outage counts as a failed start and the program can
+    | end up stopped for good. Other processes never wait.
+    |
+    */
+    'startup' => [
+        'retry_window' => (int) env('REVERB_STARTUP_RETRY_WINDOW', 120),
+        'max_retry_delay' => (int) env('REVERB_STARTUP_MAX_RETRY_DELAY', 15),
+    ],
 ];
